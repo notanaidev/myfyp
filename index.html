@@ -1004,10 +1004,10 @@ function renderFeed(){
     const isLiked=liked.has(String(v.id));
     const st=stats[String(v.id)]||{likes:0,comments:0};
     return `
-    <section class="short" data-id="${escapeHTML(v.id)}">
+    <section class="short" data-id="${escapeHTML(v.id)}" data-index="${i}">
       <div class="player">
         <video src="${escapeHTML(videoURL(v))}" playsinline webkit-playsinline loop ${soundOn?"":"muted"}
-          preload="${i===0?"auto":"metadata"}"></video>
+          preload="${i<3?"auto":"metadata"}"></video>
         <div class="play-state"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg></div>
       </div>
       <div class="short-info">
@@ -1032,12 +1032,28 @@ function renderFeed(){
   setupObserver();
 }
 
+// Warm the active video's neighbors so a snap doesn't stall on buffering.
+function warmVideos(activeIndex){
+  document.querySelectorAll(".short").forEach((s,i)=>{
+    const v=s.querySelector("video");
+    if(!v)return;
+    const dist=Math.abs(i-activeIndex);
+    const want=dist<=2?"auto":"metadata";
+    if(v.preload!==want){
+      v.preload=want;
+      // Kick the fetch if this video hasn't started loading yet.
+      // Never call load() on the currently-playing one — it would reset it.
+      if(want==="auto"&&i!==activeIndex&&v.readyState===0)v.load();
+    }
+  });
+}
+
 function setupObserver(){
   observer=new IntersectionObserver(entries=>{
     entries.forEach(entry=>{
       const section=entry.target;
       const video=section.querySelector("video");
-      if(entry.isIntersecting&&entry.intersectionRatio>=0.65){
+      if(entry.isIntersecting&&entry.intersectionRatio>=0.5){
         document.querySelectorAll(".short video").forEach(other=>{
           if(other!==video)other.pause();
         });
@@ -1045,6 +1061,7 @@ function setupObserver(){
         video.play().catch(()=>{});
         section.classList.remove("paused");
         activeVideo=video;activeId=section.dataset.id;
+        warmVideos(Number(section.dataset.index)||0);
         $("seekFill").style.width=(video.duration?video.currentTime/video.duration*100:0)+"%";
         clearTimeout(video._seen);
         video._seen=setTimeout(()=>markSeen(section.dataset.id),2000);
@@ -1053,7 +1070,7 @@ function setupObserver(){
         clearTimeout(video._seen);
       }
     });
-  },{root:$("feed"),threshold:[0,0.65,1]});
+  },{root:$("feed"),threshold:[0,0.5,1]});
 
   document.querySelectorAll(".short").forEach(s=>observer.observe(s));
 }
