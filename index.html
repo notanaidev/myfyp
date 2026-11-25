@@ -308,6 +308,7 @@ textarea.input{height:auto;min-height:92px;padding:10px 12px;resize:vertical}
   flex-shrink:0;
   overflow:hidden;
   cursor:pointer;
+  touch-action:manipulation;
 }
 .player video{
   width:100%;
@@ -704,7 +705,7 @@ textarea.input{height:auto;min-height:92px;padding:10px 12px;resize:vertical}
         <span class="field-label">Description <small>Optional</small></span>
         <textarea class="input" id="description" maxlength="5000" placeholder="Tell viewers about your video"></textarea>
       </label>
-      <button class="btn btn-primary btn-block" id="uploadButton">Publish</button>
+      <button class="btn btn-primary btn-block" id="uploadButton" disabled>Publish</button>
     </form>
     <div class="progress" id="progress" hidden><div id="progressBar"></div></div>
     <p class="message" id="uploadStatus"></p>
@@ -777,6 +778,7 @@ let observer = null;
 let soundOn = false;
 const liked = new Set();
 let activeVideo = null, activeId = null;
+let tapTimer = null;
 
 const $ = id => document.getElementById(id);
 const fmt = n => n>=1e6?(n/1e6).toFixed(n>=1e7?0:1).replace(/\.0$/,"")+"M":n>=1e3?(n/1e3).toFixed(n>=1e4?0:1).replace(/\.0$/,"")+"K":String(n);
@@ -921,7 +923,7 @@ async function loadVideos(){
   if(!db){
     $("loading").hidden=true;
     showEmpty("Connection unavailable","Could not initialize video service.");
-    return;
+    return false;
   }
 
   const {data,error}=await db.from("videos")
@@ -933,13 +935,14 @@ async function loadVideos(){
   if(error){
     $("feed").innerHTML="";
     showEmpty("Couldn't load videos",error.message);
-    return;
+    return false;
   }
 
   allVideos=data||[];
   await loadExtras();
   rankFeed();
   renderFeed();
+  return true;
 }
 
 // ---------- For-you ranking ----------
@@ -991,6 +994,7 @@ function renderFeed(){
   const feed=$("feed");
   if(observer)observer.disconnect();
   activeVideo=null;activeId=null;$("seekFill").style.width="0";
+  clearTimeout(tapTimer);tapTimer=null;
 
   if(!allVideos.length){
     feed.innerHTML="";
@@ -1041,11 +1045,17 @@ function warmVideos(activeIndex){
     const want=dist<=2?"auto":"metadata";
     if(v.preload!==want){
       v.preload=want;
-      // Kick the fetch if this video hasn't started loading yet.
-      // Never call load() on the currently-playing one — it would reset it.
       if(want==="auto"&&i!==activeIndex&&v.readyState===0)v.load();
     }
   });
+}
+
+function resetVideo(video){
+  if(!video)return;
+  try{ video.pause(); }catch{}
+  if(video.currentTime!==0){
+    try{ video.currentTime=0; }catch{}
+  }
 }
 
 function setupObserver(){
@@ -1066,8 +1076,12 @@ function setupObserver(){
         clearTimeout(video._seen);
         video._seen=setTimeout(()=>markSeen(section.dataset.id),2000);
       }else{
-        video.pause();
+        resetVideo(video);
         clearTimeout(video._seen);
+        if(video===activeVideo){
+          activeVideo=null;
+          $("seekFill").style.width="0%";
+        }
       }
     });
   },{root:$("feed"),threshold:[0,0.5,1]});
@@ -1085,6 +1099,8 @@ $("feed").addEventListener("loadedmetadata",e=>{
 },true);
 
 $("feed").addEventListener("dblclick",e=>{
+  // Cancel any pending single-tap pause toggle.
+  if(tapTimer){clearTimeout(tapTimer);tapTimer=null;}
   const player=e.target.closest(".player");
   if(!player||e.target.closest(".scrub"))return;
   const section=player.closest(".short");
@@ -1122,8 +1138,15 @@ seekEl.addEventListener("pointercancel",()=>{seeking=false});
 
 function toggleSound(){soundOn=!soundOn;applySound()}
 function showDetails(id=activeId){
+  if(!id){
+    toast("Scroll to a video first");
+    return;
+  }
   const v=allVideos.find(x=>String(x.id)===String(id));
-  if(!v)return;
+  if(!v){
+    toast("Video not found");
+    return;
+  }
   $("detailsTitle").textContent=v.title||"Untitled";
   $("detailsMeta").textContent="Uploaded "+formatDate(v.created_at);
   $("detailsDesc").textContent=v.description||"No description.";
@@ -1134,11 +1157,6 @@ function applySound(){
   $("soundBtn").querySelector("use").setAttribute("href",soundOn?"#i-sound":"#i-mute");
   document.querySelectorAll(".short").forEach(s=>{
     s.querySelector("video").muted=!soundOn;
-    s.querySelectorAll("[data-action=sound]").forEach(b=>{
-      b.querySelector("svg use").setAttribute("href",soundOn?"#i-sound":"#i-mute");
-    });
-    const label=s.querySelector(".sound-label");
-    if(label)label.textContent=soundOn?"Sound":"Muted";
   });
 }
 
@@ -1151,13 +1169,18 @@ $("feed").addEventListener("click",async e=>{
 
   if(!action){
     if(!e.target.closest(".player"))return;
-    if(video.paused){
-      await video.play().catch(()=>{});
-      section.classList.remove("paused");
-    }else{
-      video.pause();
-      section.classList.add("paused");
-    }
+    // Debounce so a double-tap (like) doesn't also toggle play/pause.
+    if(tapTimer){clearTimeout(tapTimer);tapTimer=null;return}
+    tapTimer=setTimeout(()=>{
+      tapTimer=null;
+      if(video.paused){
+        video.play().catch(()=>{});
+        section.classList.remove("paused");
+      }else{
+        video.pause();
+        section.classList.add("paused");
+      }
+    },300);
     return;
   }
 
@@ -1212,6 +1235,7 @@ function openUpload(){
     return;
   }
   if(!pending)setMessage("uploadStatus","");
+  $("uploadButton").disabled=!pending;
   openModal("uploadModal");
 }
 
@@ -1402,6 +1426,7 @@ $("videoFile").addEventListener("change",()=>{
   discardPending();
   updateDropLabel();
   const file=$("videoFile").files[0];
+  $("uploadButton").disabled=!file;
   if(!file){$("progress").hidden=true;setMessage("uploadStatus","");return}
   if(!currentUser){openAuth();return}
 
@@ -1424,7 +1449,11 @@ $("videoFile").addEventListener("change",()=>{
 
 $("uploadForm").addEventListener("submit",async e=>{
   e.preventDefault();
-  if(!currentUser||!pending||!db)return;
+  if(!currentUser||!db)return;
+  if(!pending){
+    setMessage("uploadStatus","Choose a video file first.","error");
+    return;
+  }
 
   const title=$("title").value.trim();
   const description=$("description").value.trim();
@@ -1455,6 +1484,7 @@ $("uploadForm").addEventListener("submit",async e=>{
     updateDropLabel();
     $("titleCount").textContent="0 / 160";
     $("progress").hidden=true;
+    $("uploadButton").disabled=true;
     setMessage("uploadStatus","");
     closeModal("uploadModal");
     toast("Your video is live");
@@ -1472,7 +1502,8 @@ window.addEventListener("beforeunload",e=>{
 });
 
 // ---------- Profiles, likes, comments ----------
-let stats = {}, profiles = {}, lastUid = null, commentVideo = null, avatarBlob = null;
+let stats = {}, profiles = {}, lastUid = null, commentVideo = null;
+let avatarBlob = null, avatarBlobURL = null;
 
 function avatarHTML(p,cls="md"){
   const name=p?.username||"?";
@@ -1598,8 +1629,10 @@ $("commentForm").addEventListener("submit",async e=>{
 });
 $("commentList").addEventListener("click",async e=>{
   const b=e.target.closest("[data-del]");
-  if(!b||!db)return;
-  const {error}=await db.from("comments").delete().eq("id",b.dataset.del);
+  if(!b||!db||!currentUser)return;
+  const {error}=await db.from("comments").delete()
+    .eq("id",b.dataset.del)
+    .eq("user_id",currentUser.id);
   if(error){toast("Couldn't delete comment");return}
   b.closest(".comment").remove();
   bumpComments(commentVideo,-1);
@@ -1609,6 +1642,7 @@ $("commentList").addEventListener("click",async e=>{
 function openProfile(){
   if(!currentUser){openAuth();return}
   closeMenu();
+  if(avatarBlobURL){URL.revokeObjectURL(avatarBlobURL);avatarBlobURL=null}
   const me=profiles[currentUser.id];
   $("profileName").value=me?.username||"";
   $("profilePreview").innerHTML=avatarHTML(me||{username:currentUser.email},"lg");
@@ -1634,8 +1668,11 @@ $("avatarFile").addEventListener("change",async()=>{
   const f=$("avatarFile").files[0];
   if(!f)return;
   try{
-    avatarBlob=await squareImage(f,256);
-    $("profilePreview").innerHTML=`<img class="av lg" src="${URL.createObjectURL(avatarBlob)}" alt="">`;
+    const blob=await squareImage(f,256);
+    if(avatarBlobURL)URL.revokeObjectURL(avatarBlobURL);
+    avatarBlob=blob;
+    avatarBlobURL=URL.createObjectURL(blob);
+    $("profilePreview").innerHTML=`<img class="av lg" src="${avatarBlobURL}" alt="">`;
   }catch{setMessage("profileStatus","Couldn't read that image.","error")}
 });
 $("profileForm").addEventListener("submit",async e=>{
@@ -1657,6 +1694,8 @@ $("profileForm").addEventListener("submit",async e=>{
     if(error)throw error.code==="23505"?new Error("That username is taken."):error;
     profiles[currentUser.id]=data;
     renderAvatarBtn();refreshUploaders();
+    if(avatarBlobURL){URL.revokeObjectURL(avatarBlobURL);avatarBlobURL=null}
+    avatarBlob=null;
     closeModal("profileModal");toast("Profile saved");
   }catch(err){setMessage("profileStatus",err.message,"error")}
   finally{btn.disabled=false}
@@ -1705,9 +1744,13 @@ function searchVideos(){
   });
 }
 
-function goHome(){
+async function goHome(){
   const f=$("feed");
-  if(f.scrollTop<10){loadVideos().then(()=>toast("Feed refreshed"));return}
+  if(f.scrollTop<10){
+    const ok=await loadVideos();
+    if(ok)toast("Feed refreshed");
+    return;
+  }
   f.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -1731,11 +1774,12 @@ function openSharedShort(){
   const id=new URLSearchParams(location.search).get("short");
   if(!id)return;
   const index=allVideos.findIndex(v=>String(v.id)===id);
-  if(index>=0){
-    requestAnimationFrame(()=>{
-      document.querySelectorAll(".short")[index]?.scrollIntoView();
-    });
-  }
+  if(index<0)return;
+  const target=document.querySelectorAll(".short")[index];
+  if(!target)return;
+  const v=target.querySelector("video");
+  if(v){v.preload="auto";try{v.load()}catch{}}
+  requestAnimationFrame(()=>target.scrollIntoView());
 }
 
 updateAccount().then(()=>loadVideos()).then(openSharedShort);
