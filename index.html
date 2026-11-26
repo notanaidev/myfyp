@@ -10,12 +10,37 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
+
 <style>
 *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{--bg:#000000;--panel:#111113;--panel-2:#1a1a1e;--panel-3:#242429;--line:#242428;--line-2:#323238;--text:#ffffff;--text-2:#a1a1aa;--text-3:#71717a;--like:#ff2d55;--save:#fbbf24;--danger:#f87171;--ok:#4ade80;--side:0px;--nav-h:calc(56px + env(safe-area-inset-bottom));--r-sm:10px;--r-md:14px;--r-lg:20px;--font:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font:400 14px/1.45 var(--font);letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
+:root{
+  --bg:#000000;
+  --panel:#111113;
+  --panel-2:#1a1a1e;
+  --panel-3:#242429;
+  --line:#242428;
+  --line-2:#323238;
+  --text:#ffffff;
+  --text-2:#a1a1aa;
+  --text-3:#71717a;
+  --like:#ff2d55;
+  --save:#fbbf24;
+  --danger:#f87171;
+  --ok:#4ade80;
+  --side:0px;
+  --nav-h:calc(56px + env(safe-area-inset-bottom));
+  --r-sm:10px;--r-md:14px;--r-lg:20px;
+  --font:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+html,body{
+  margin:0;width:100%;height:100%;overflow:hidden;
+  background:var(--bg);color:var(--text);
+  font:400 14px/1.45 var(--font);letter-spacing:-.01em;
+  -webkit-font-smoothing:antialiased;
+}
 button,input,textarea{font:inherit;color:inherit;letter-spacing:inherit}
 button{cursor:pointer;border:0;background:none;padding:0}
 :focus-visible{outline:2px solid #fff;outline-offset:2px}
@@ -50,7 +75,13 @@ textarea.input{height:auto;min-height:92px;padding:10px 12px;resize:vertical}
 .av.xl{width:38px;height:38px;font-size:14px}
 .av.nav{width:24px;height:24px;font-size:11px}
 
-.topbar{position:fixed;top:0;left:0;right:0;height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 16px 0 22px;display:flex;align-items:center;justify-content:space-between;z-index:12;pointer-events:none;text-shadow:0 1px 6px rgba(0,0,0,.65)}
+.topbar{
+  position:fixed;top:0;left:0;right:0;
+  height:calc(56px + env(safe-area-inset-top));
+  padding:env(safe-area-inset-top) 16px 0 22px;
+  display:flex;align-items:center;justify-content:space-between;
+  z-index:12;pointer-events:none;text-shadow:0 1px 6px rgba(0,0,0,.65);
+}
 .topbar>*{pointer-events:auto}
 .brand{display:inline-flex;align-items:center;gap:8px;color:#fff;text-decoration:none}
 .brand .word{font:700 20px/1 var(--font);letter-spacing:-.04em}
@@ -94,12 +125,15 @@ textarea.input{height:auto;min-height:92px;padding:10px 12px;resize:vertical}
 #feed{position:fixed;top:0;bottom:var(--nav-h);left:0;right:0;overflow-y:auto;overflow-x:hidden;scroll-snap-type:y mandatory;overscroll-behavior-y:contain;scrollbar-width:none}
 #feed::-webkit-scrollbar{display:none}
 
-.short{--ar:.5625;position:relative;width:100%;height:100%;container-type:size;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden}
+.short{--ar:.5625;position:relative;width:100%;height:100%;min-height:100%;container-type:size;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden}
 .short[data-shape=wide]{padding-top:56px}
 
-.player{position:relative;height:100%;width:min(100cqh * var(--ar),100cqw - 240px);max-width:calc(100vw - 240px);max-height:100%;aspect-ratio:var(--ar);background:#000;flex-shrink:0;overflow:hidden;cursor:pointer;touch-action:manipulation}
-.player video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
+.player{position:relative;height:100%;width:auto;max-width:calc(100vw - 240px);max-height:100%;aspect-ratio:var(--ar);background:#000;flex-shrink:0;overflow:hidden;cursor:pointer;touch-action:manipulation}
+.player video{width:100%;height:100%;object-fit:contain;display:block;background:#000}
 .player::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,transparent 16%,transparent 72%,rgba(0,0,0,.62) 100%)}
+.short.loading .player::before{content:"";position:absolute;z-index:2;left:50%;top:50%;width:28px;height:28px;margin:-14px;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:videoSpin .7s linear infinite;pointer-events:none}
+.short.video-error .player::before{content:"Video unavailable";position:absolute;z-index:2;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.72);font-size:13px;background:#080808}
+@keyframes videoSpin{to{transform:rotate(360deg)}}
 
 .short-info{position:absolute;left:24px;bottom:24px;width:max(200px,min(380px,calc((100vw - min(100vh * var(--ar),100vw - 240px))/2 - 40px)));z-index:4;pointer-events:none;text-shadow:0 1px 4px rgba(0,0,0,.7),0 2px 12px rgba(0,0,0,.5)}
 .uploader{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-weight:600;font-size:15px;color:#fff;pointer-events:auto;flex-wrap:wrap}
@@ -122,7 +156,6 @@ textarea.input{height:auto;min-height:92px;padding:10px 12px;resize:vertical}
 @keyframes burst{0%{transform:scale(.4) rotate(-8deg);opacity:0}25%{transform:scale(1.12) rotate(3deg);opacity:1}100%{transform:translateY(-28px) scale(1.22) rotate(0deg);opacity:0}}
 
 .speed-badge{position:absolute;top:16px;left:16px;background:rgba(0,0,0,.65);color:#fff;font-size:13px;font-weight:700;padding:4px 10px;border-radius:6px;z-index:6;pointer-events:none;letter-spacing:.02em}
-
 .seek-hint{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);color:#fff;padding:10px 16px;border-radius:10px;font-size:15px;font-weight:700;z-index:6;pointer-events:none;animation:seekHint .7s ease forwards}
 .seek-hint.left{left:12%}
 .seek-hint.right{right:12%}
@@ -134,6 +167,7 @@ textarea.input{height:auto;min-height:92px;padding:10px 12px;resize:vertical}
 .action-icon svg.i{width:30px;height:30px}
 .action:hover .action-icon{transform:scale(1.08)}
 .action:active .action-icon{transform:scale(.9)}
+
 .action .on{display:none}
 .action.liked .on{display:block;color:var(--like);animation:heartPop .38s cubic-bezier(.175,.885,.32,1.275)}
 .action.liked .off{display:none}
@@ -230,8 +264,6 @@ textarea.input{height:auto;min-height:92px;padding:10px 12px;resize:vertical}
 @media (max-width:720px){
   .short[data-shape=wide]{padding-top:0}
   .player{width:100%;height:100%;max-width:none;aspect-ratio:auto}
-  .player video{object-fit:contain}
-  .short[data-shape=portrait] .player video{object-fit:cover}
   .short-info{left:16px;right:84px;width:auto;bottom:20px}
   .actions{right:10px;bottom:20px;gap:18px}
   .overlay{align-items:flex-end;padding:0}
@@ -244,6 +276,7 @@ textarea.input{height:auto;min-height:92px;padding:10px 12px;resize:vertical}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
+
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-search" viewBox="0 0 24 24"><path d="M11 4a7 7 0 1 0 4.39 12.45l4.08 4.08a1 1 0 0 0 1.41-1.41l-4.08-4.08A7 7 0 0 0 11 4zm-5 7a5 5 0 1 1 10 0 5 5 0 0 1-10 0z"/></symbol>
@@ -270,7 +303,9 @@ textarea.input{height:auto;min-height:92px;padding:10px 12px;resize:vertical}
 </svg>
 
 <header class="topbar">
-  <a class="brand" href="./" onclick="event.preventDefault();goHome()" aria-label="myfyp home"><span class="word">myfyp</span></a>
+  <a class="brand" href="./" onclick="event.preventDefault();goHome()" aria-label="myfyp home">
+    <span class="word">myfyp</span>
+  </a>
   <div class="top-tabs" role="tablist" aria-label="Feed">
     <button class="top-tab active" id="tabForYou" role="tab" aria-selected="true" onclick="setFeedMode('foryou')">For You</button>
     <button class="top-tab" id="tabFollowing" role="tab" aria-selected="false" onclick="setFeedMode('following')">Following</button>
@@ -282,8 +317,11 @@ textarea.input{height:auto;min-height:92px;padding:10px 12px;resize:vertical}
 </header>
 
 <div class="seek" id="seek" aria-hidden="true"><i id="seekFill"></i></div>
+
 <main id="feed" aria-label="Videos"></main>
+
 <div class="state" id="loading"><div class="skeleton"></div></div>
+
 <div class="state" id="empty" hidden>
   <div class="state-inner">
     <div class="state-icon"><svg class="i"><use href="#i-film"/></svg></div>
@@ -446,29 +484,78 @@ textarea.input{height:auto;min-height:92px;padding:10px 12px;resize:vertical}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-/* Run once in Supabase SQL editor:
-alter table public.videos add column if not exists poster_path text;
-alter table public.videos add column if not exists deleted_at timestamptz;
-create table if not exists public.follows(follower_id uuid references auth.users(id) on delete cascade not null,following_id uuid references auth.users(id) on delete cascade not null,created_at timestamptz default now(),primary key(follower_id,following_id));
-alter table public.follows enable row level security;
-create policy "read follows" on public.follows for select using(true);
-create policy "insert own follow" on public.follows for insert with check(auth.uid()=follower_id);
-create policy "delete own follow" on public.follows for delete using(auth.uid()=follower_id);
-create table if not exists public.saved(user_id uuid references auth.users(id) on delete cascade not null,video_id uuid references public.videos(id) on delete cascade not null,created_at timestamptz default now(),primary key(user_id,video_id));
-alter table public.saved enable row level security;
-create policy "read own saved" on public.saved for select using(auth.uid()=user_id);
-create policy "insert own saved" on public.saved for insert with check(auth.uid()=user_id);
-create policy "delete own saved" on public.saved for delete using(auth.uid()=user_id);
-create table if not exists public.reports(id uuid primary key default gen_random_uuid(),reporter_id uuid references auth.users(id) on delete cascade not null,video_id uuid references public.videos(id) on delete cascade,comment_id uuid references public.comments(id) on delete cascade,reason text not null,created_at timestamptz default now());
-alter table public.reports enable row level security;
-create policy "insert own report" on public.reports for insert with check(auth.uid()=reporter_id);
-create table if not exists public.blocks(blocker_id uuid references auth.users(id) on delete cascade not null,blocked_id uuid references auth.users(id) on delete cascade not null,created_at timestamptz default now(),primary key(blocker_id,blocked_id));
-alter table public.blocks enable row level security;
-create policy "own blocks" on public.blocks for all using(auth.uid()=blocker_id);
-create or replace function public.check_comment_rate() returns trigger as $$ declare cnt int; begin select count(*) into cnt from public.comments where user_id=new.user_id and created_at>now()-interval '1 minute'; if cnt>=20 then raise exception 'Slow down - too many comments.'; end if; return new; end; $$ language plpgsql security definer;
-drop trigger if exists comment_rate on public.comments;
-create trigger comment_rate before insert on public.comments for each row execute function public.check_comment_rate();
-*/
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * SQL MIGRATION — run this once in the Supabase SQL Editor before using
+ * any of the new features. Safe to re-run (uses IF NOT EXISTS).
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * -- 1. New columns on videos
+ * alter table public.videos add column if not exists poster_path text;
+ * alter table public.videos add column if not exists deleted_at timestamptz;
+ *
+ * -- 2. Follows
+ * create table if not exists public.follows (
+ *   follower_id uuid references auth.users(id) on delete cascade not null,
+ *   following_id uuid references auth.users(id) on delete cascade not null,
+ *   created_at timestamptz default now(),
+ *   primary key (follower_id, following_id)
+ * );
+ * alter table public.follows enable row level security;
+ * create policy "read follows" on public.follows for select using (true);
+ * create policy "insert own follow" on public.follows for insert with check (auth.uid() = follower_id);
+ * create policy "delete own follow" on public.follows for delete using (auth.uid() = follower_id);
+ *
+ * -- 3. Saved / bookmarks
+ * create table if not exists public.saved (
+ *   user_id uuid references auth.users(id) on delete cascade not null,
+ *   video_id uuid references public.videos(id) on delete cascade not null,
+ *   created_at timestamptz default now(),
+ *   primary key (user_id, video_id)
+ * );
+ * alter table public.saved enable row level security;
+ * create policy "read own saved" on public.saved for select using (auth.uid() = user_id);
+ * create policy "insert own saved" on public.saved for insert with check (auth.uid() = user_id);
+ * create policy "delete own saved" on public.saved for delete using (auth.uid() = user_id);
+ *
+ * -- 4. Reports
+ * create table if not exists public.reports (
+ *   id uuid primary key default gen_random_uuid(),
+ *   reporter_id uuid references auth.users(id) on delete cascade not null,
+ *   video_id uuid references public.videos(id) on delete cascade,
+ *   comment_id uuid references public.comments(id) on delete cascade,
+ *   reason text not null,
+ *   created_at timestamptz default now()
+ * );
+ * alter table public.reports enable row level security;
+ * create policy "insert own report" on public.reports for insert with check (auth.uid() = reporter_id);
+ *
+ * -- 5. Blocks
+ * create table if not exists public.blocks (
+ *   blocker_id uuid references auth.users(id) on delete cascade not null,
+ *   blocked_id uuid references auth.users(id) on delete cascade not null,
+ *   created_at timestamptz default now(),
+ *   primary key (blocker_id, blocked_id)
+ * );
+ * alter table public.blocks enable row level security;
+ * create policy "own blocks" on public.blocks for all using (auth.uid() = blocker_id);
+ *
+ * -- 6. Comment rate limit (20 per minute per user)
+ * create or replace function public.check_comment_rate() returns trigger as $$
+ * declare cnt int;
+ * begin
+ *   select count(*) into cnt from public.comments
+ *    where user_id = new.user_id and created_at > now() - interval '1 minute';
+ *   if cnt >= 20 then raise exception 'Slow down — too many comments.'; end if;
+ *   return new;
+ * end;
+ * $$ language plpgsql security definer;
+ * drop trigger if exists comment_rate on public.comments;
+ * create trigger comment_rate before insert on public.comments
+ *   for each row execute function public.check_comment_rate();
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
 
 const SUPABASE_URL = "https://fktecedlibbsbqodfutf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_V5oUNsp4QMU8Etq6b8EXpw_Vt7QjB9K";
@@ -493,7 +580,6 @@ let avatarBlob = null, avatarBlobURL = null;
 let activeVideo = null, activeId = null;
 let tapTimer = null, lastTapTime = 0;
 let pressTimer = null, pressSpeedup = false, suppressNextClick = false;
-let speedupVideo = null, speedupPointerId = null;
 let feedMode = "foryou";
 let pageOffset = 0, hasMore = true, loadingMore = false;
 let commentChannel = null;
@@ -507,7 +593,7 @@ function escapeHTML(value=""){
   return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 }
 function formatDate(d){return new Date(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});}
-function openModal(id){$(id).classList.add("open");if(id==="commentsModal")document.body.classList.add("panel-open");}
+function openModal(id){$(id).classList.add("open");if(id==="commentsModal")document.body.classList.add("panel-open")}
 function closeModal(id){
   $(id).classList.remove("open");
   if(id==="commentsModal"){
@@ -516,17 +602,33 @@ function closeModal(id){
   }
 }
 let toastTimer;
-function toast(text){const t=$("toast");t.textContent=text;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2200);}
-function setMessage(id,text,type=""){const el=$(id);el.textContent=text;el.className="message"+(type?" "+type:"");}
+function toast(text){
+  const t=$("toast");t.textContent=text;t.classList.add("show");
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2200);
+}
+function setMessage(id,text,type=""){
+  const el=$(id);el.textContent=text;el.className="message"+(type?" "+type:"");
+}
 function videoURL(v){if(!db)return "";return db.storage.from(BUCKET).getPublicUrl(v.storage_path).data.publicUrl;}
 function posterURL(v){if(!db||!v.poster_path)return null;return db.storage.from(BUCKET).getPublicUrl(v.poster_path).data.publicUrl;}
 
-function openAuth(){if(currentUser)return;setMessage("authMessage","");openModal("authModal");setTimeout(()=>$("email").focus(),50);}
-function accountClick(e){if(!currentUser){openAuth();return;}toggleMenu(e);}
+// ---------- Account ----------
+function openAuth(){
+  if(currentUser)return;
+  setMessage("authMessage","");
+  openModal("authModal");
+  setTimeout(()=>$("email").focus(),50);
+}
+function accountClick(e){if(!currentUser){openAuth();return}toggleMenu(e);}
 function toggleMenu(e){e.stopPropagation();$("accountMenu").hidden=!$("accountMenu").hidden;}
 function closeMenu(){$("accountMenu").hidden=true;}
 document.addEventListener("click",e=>{if(!e.target.closest(".account"))closeMenu();});
-async function signOut(){closeMenu();if(db)await db.auth.signOut();toast("Signed out");}
+
+async function signOut(){
+  closeMenu();
+  if(db)await db.auth.signOut();
+  toast("Signed out");
+}
 
 function setAuthMode(signUp){
   creatingAccount=signUp;
@@ -541,10 +643,12 @@ function setAuthMode(signUp){
 
 $("authForm").addEventListener("submit",async e=>{
   e.preventDefault();
-  if(!db){setMessage("authMessage","Backend unavailable offline.","error");return;}
+  if(!db){setMessage("authMessage","Backend unavailable offline.","error");return}
   const email=$("email").value, password=$("password").value, btn=$("authSubmit");
-  btn.disabled=true;setMessage("authMessage","Please wait…");
-  const result=creatingAccount?await db.auth.signUp({email,password}):await db.auth.signInWithPassword({email,password});
+  btn.disabled=true; setMessage("authMessage","Please wait…");
+  const result=creatingAccount
+    ?await db.auth.signUp({email,password})
+    :await db.auth.signInWithPassword({email,password});
   btn.disabled=false;
   if(result.error){setMessage("authMessage",result.error.message,"error");return;}
   if(creatingAccount&&!result.data.session){setMessage("authMessage","Check your inbox to confirm your email address.","success");return;}
@@ -565,12 +669,17 @@ async function updateAccount(){
       await Promise.all([loadMyProfile(),loadMyLikes(),loadMySaved(),loadMyFollowing(),loadMyBlocks()]);
       updateLikeUI();
     }
-    if(currentUser){$("menuEmail").textContent=currentUser.email||"";renderAvatarBtn();}
-    else $("avatarIconWrap").innerHTML=icon("user");
+    if(currentUser){
+      $("menuEmail").textContent=currentUser.email||"";
+      renderAvatarBtn();
+    }else{
+      $("avatarIconWrap").innerHTML=icon("user");
+    }
   }catch{}
 }
 if(db)db.auth.onAuthStateChange(()=>updateAccount());
 
+// ---------- Feed data ----------
 async function fetchVideosPage(offset,size){
   if(!db)return {data:[],error:null};
   const buildQuery=()=>{
@@ -578,8 +687,11 @@ async function fetchVideosPage(offset,size){
     if(feedMode==="following")q=q.in("user_id",[...following]);
     return q;
   };
+  // Try with soft-delete filter, fall back if column doesn't exist
   let res=await buildQuery().is("deleted_at",null).range(offset,offset+size-1);
-  if(res.error&&/deleted_at/i.test(res.error.message||""))res=await buildQuery().range(offset,offset+size-1);
+  if(res.error&&/deleted_at/i.test(res.error.message||'')){
+    res=await buildQuery().range(offset,offset+size-1);
+  }
   return res;
 }
 
@@ -589,14 +701,25 @@ async function loadExtrasFor(videos){
   const unknownVideoIds=ids.filter(id=>!stats[String(id)]);
   const unknownUserIds=[...new Set(videos.map(v=>v.user_id))].filter(u=>!profiles[u]);
   const jobs=[];
-  if(unknownVideoIds.length)jobs.push(db.from("video_stats").select("*").in("video_id",unknownVideoIds).then(r=>{(r.data||[]).forEach(row=>{stats[String(row.video_id)]={likes:row.likes,comments:row.comments};});}));
-  if(unknownUserIds.length)jobs.push(db.from("profiles").select("*").in("id",unknownUserIds).then(r=>{(r.data||[]).forEach(row=>{profiles[row.id]=row;});}));
+  if(unknownVideoIds.length){
+    jobs.push(db.from("video_stats").select("*").in("video_id",unknownVideoIds).then(r=>{
+      (r.data||[]).forEach(row=>{stats[String(row.video_id)]={likes:row.likes,comments:row.comments};});
+    }));
+  }
+  if(unknownUserIds.length){
+    jobs.push(db.from("profiles").select("*").in("id",unknownUserIds).then(r=>{
+      (r.data||[]).forEach(row=>{profiles[row.id]=row;});
+    }));
+  }
   await Promise.all(jobs);
 }
 
+async function loadExtras(){ await loadExtrasFor(allVideos); }
+
+// ---------- Ranking ----------
 const SEEN_KEY="myfyp_seen";
 let seen={};
-try{seen=JSON.parse(window.localStorage.getItem(SEEN_KEY)||"{}");}catch{}
+try{seen=JSON.parse(window.localStorage.getItem(SEEN_KEY)||"{}")}catch{}
 function markSeen(id){
   if(seen[id])return;
   seen[id]=Date.now();
@@ -607,7 +730,11 @@ function markSeen(id){
   }catch{}
 }
 const SEED=Math.random();
-function hash01(str){let h=2166136261;for(let i=0;i<str.length;i++)h=Math.imul(h^str.charCodeAt(i),16777619);return ((h>>>0)%10000)/10000;}
+function hash01(str){
+  let h=2166136261;
+  for(let i=0;i<str.length;i++)h=Math.imul(h^str.charCodeAt(i),16777619);
+  return ((h>>>0)%10000)/10000;
+}
 function scoreVideo(v,affinity){
   const id=String(v.id),st=stats[id]||{likes:0,comments:0};
   const ageDays=Math.max(0,(Date.now()-new Date(v.created_at))/864e5);
@@ -622,7 +749,7 @@ function scoreVideo(v,affinity){
 }
 function rankFeed(){
   const affinity={};
-  allVideos.forEach(v=>{if(liked.has(String(v.id)))affinity[v.user_id]=(affinity[v.user_id]||0)+1;});
+  allVideos.forEach(v=>{if(liked.has(String(v.id)))affinity[v.user_id]=(affinity[v.user_id]||0)+1});
   const pool=allVideos.map(v=>({v,s:scoreVideo(v,affinity)})).sort((a,b)=>b.s-a.s).map(x=>x.v);
   const out=[];
   while(pool.length){
@@ -634,6 +761,7 @@ function rankFeed(){
   allVideos=out;
 }
 
+// ---------- Section rendering ----------
 function sectionHTML(v,i){
   const isLiked=liked.has(String(v.id));
   const isSaved=saved.has(String(v.id));
@@ -644,9 +772,8 @@ function sectionHTML(v,i){
   return `
   <section class="short" data-id="${escapeHTML(v.id)}" data-index="${i}">
     <div class="player">
-      <video src="${escapeHTML(videoURL(v))}" ${poster?`poster="${escapeHTML(poster)}"`:""} playsinline webkit-playsinline loop ${soundOn?"":"muted"} preload="${i<3?"auto":"metadata"}"></video>
+      <video data-src="${escapeHTML(videoURL(v))}" ${poster?`poster="${escapeHTML(poster)}"`:""} playsinline webkit-playsinline loop ${soundOn?"":"muted"} preload="none"></video>
       <div class="play-state"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg></div>
-      <div class="speed-badge" hidden>2x</div>
     </div>
     <div class="short-info">
       <div class="uploader">
@@ -679,86 +806,249 @@ function sectionHTML(v,i){
 function renderFeed(){
   const feed=$("feed");
   if(observer)observer.disconnect();
+  playbackRequest++;
   activeVideo=null;activeId=null;$("seekFill").style.width="0";
   clearTimeout(tapTimer);tapTimer=null;
-  if(!allVideos.length){feed.innerHTML="";return;}
+  if(!allVideos.length){
+    feed.innerHTML="";
+    return;
+  }
   $("empty").hidden=true;
   feed.innerHTML=allVideos.map((v,i)=>sectionHTML(v,i)).join("");
   setupObserver();
   warmVideos(0);
 }
 
-function appendSections(videos){
+function appendSections(videos,startIndex=allVideos.length-videos.length){
   const feed=$("feed");
-  const startIndex=allVideos.length-videos.length;
   feed.insertAdjacentHTML("beforeend",videos.map((v,i)=>sectionHTML(v,startIndex+i)).join(""));
   const sections=feed.querySelectorAll(".short");
-  for(let i=sections.length-videos.length;i<sections.length;i++){if(observer)observer.observe(sections[i]);}
+  for(let i=sections.length-videos.length;i<sections.length;i++){
+    if(observer)observer.observe(sections[i]);
+  }
 }
 
+let loopAppending=false;
+let loopCycles=0;
+function appendLoopBatch(){
+  // Once the server has no more pages, repeat the loaded feed from its beginning.
+  // Keep the source list and pagination offset unchanged; only add another visual pass.
+  if(loopAppending||hasMore||!allVideos.length)return;
+  loopAppending=true;
+  const startIndex=$("feed").querySelectorAll(".short").length;
+  appendSections(allVideos.slice(),startIndex);
+  loopCycles++;
+  loopAppending=false;
+}
+
+let playbackRequest=0;
+
 function warmVideos(activeIndex){
-  document.querySelectorAll(".short").forEach((s,i)=>{
-    const v=s.querySelector("video");if(!v)return;
-    const dist=Math.abs(i-activeIndex);
-    const want=dist<=2?"auto":"metadata";
-    if(v.preload!==want){v.preload=want;if(want==="auto"&&i!==activeIndex&&v.readyState===0)v.load();}
+  // Keep only the active video and one video ahead in the network queue.
+  const sections=[...$("feed").querySelectorAll(".short")];
+  sections.forEach((section,index)=>{
+    const video=section.querySelector("video");
+    if(!video)return;
+    const shouldLoad=index===activeIndex||index===activeIndex+1;
+    if(shouldLoad){
+      video.preload="auto";
+      const source=video.dataset.src;
+      if(source&&video.getAttribute("src")!==source){
+        video.src=source;
+        video.load();
+      }
+    }else{
+      video.preload="none";
+      // Never tear down the active decoder during a scroll transition.
+      if(video!==activeVideo&&video.hasAttribute("src")){
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
+      }
+    }
   });
 }
 
 function resetVideo(video){
   if(!video)return;
   try{video.pause();}catch{}
-  if(video.playbackRate!==1)video.playbackRate=1;
-  if(video.currentTime!==0){try{video.currentTime=0;}catch{}}
+}
+
+async function startActiveVideo(video,section){
+  const request=++playbackRequest;
+  const source=video.dataset.src;
+  if(source&&video.getAttribute("src")!==source){
+    video.src=source;
+    video.load();
+  }
+  video.muted=!soundOn;
+  video.playsInline=true;
+  section.classList.add("loading");
+  section.classList.remove("video-error");
+
+  // Wait for the first usable frame, but never leave the feed stuck forever.
+  if(video.readyState<2){
+    await new Promise(resolve=>{
+      let finished=false;
+      const done=()=>{
+        if(finished)return;
+        finished=true;
+        clearTimeout(timeout);
+        video.removeEventListener("loadeddata",done);
+        video.removeEventListener("canplay",done);
+        video.removeEventListener("error",done);
+        resolve();
+      };
+      const timeout=setTimeout(done,7000);
+      video.addEventListener("loadeddata",done,{once:true});
+      video.addEventListener("canplay",done,{once:true});
+      video.addEventListener("error",done,{once:true});
+      if(video.readyState>=2||video.error)done();
+    });
+  }
+
+  if(request!==playbackRequest||activeVideo!==video||document.hidden||section.classList.contains("paused"))return;
+  if(video.error){section.classList.remove("loading");section.classList.add("video-error");return;}
+  if(video.readyState<2){
+    // A late network response can still recover this active item.
+    section.classList.add("loading");
+    return;
+  }
+  video.muted=!soundOn;
+  try{await video.play();}catch(error){
+    if(request===playbackRequest&&activeVideo===video&&error?.name!=="AbortError"){
+      section.classList.remove("loading");
+      section.classList.add("paused");
+    }
+  }
 }
 
 function setupObserver(){
+  const visibility=new Map();
+  let selectionFrame=0;
   observer=new IntersectionObserver(entries=>{
     entries.forEach(entry=>{
-      const section=entry.target;
-      const video=section.querySelector("video");
-      if(entry.isIntersecting&&entry.intersectionRatio>=0.5){
-        document.querySelectorAll(".short video").forEach(other=>{if(other!==video)other.pause();});
-        if(video.playbackRate!==1)video.playbackRate=1;
-        video.muted=!soundOn;
-        video.play().catch(()=>{});
-        section.classList.remove("paused");
-        activeVideo=video;activeId=section.dataset.id;
-        warmVideos(Number(section.dataset.index)||0);
+      visibility.set(entry.target,entry.isIntersecting?entry.intersectionRatio:0);
+    });
+    if(selectionFrame)return;
+    selectionFrame=requestAnimationFrame(()=>{
+      selectionFrame=0;
+      let bestSection=null,bestRatio=0.5;
+      visibility.forEach((ratio,section)=>{
+        if(!section.isConnected){visibility.delete(section);return;}
+        if(ratio>bestRatio){bestRatio=ratio;bestSection=section;}
+      });
+
+      if(!bestSection){
+        if(activeVideo){playbackRequest++;resetVideo(activeVideo);activeVideo=null;activeId=null;$("seekFill").style.width="0%";}
+        return;
+      }
+
+      const video=bestSection.querySelector("video");
+      if(!video)return;
+      const index=Number(bestSection.dataset.index)||0;
+
+      if(video!==activeVideo){
+        playbackRequest++;
+        if(activeVideo)resetVideo(activeVideo);
+        activeVideo=video;
+        activeId=bestSection.dataset.id;
+        bestSection.classList.remove("paused","video-error");
+        warmVideos(index);
+        startActiveVideo(video,bestSection);
         $("seekFill").style.width=(video.duration?video.currentTime/video.duration*100:0)+"%";
         clearTimeout(video._seen);
-        video._seen=setTimeout(()=>markSeen(section.dataset.id),2000);
+        video._seen=setTimeout(()=>markSeen(bestSection.dataset.id),2000);
       }else{
-        resetVideo(video);
-        clearTimeout(video._seen);
-        if(video===activeVideo){activeVideo=null;$("seekFill").style.width="0%";}
+        video.muted=!soundOn;
+        if(video.paused&&!bestSection.classList.contains("paused")&&!document.hidden){
+          startActiveVideo(video,bestSection);
+        }
       }
     });
-  },{root:$("feed"),threshold:[0,0.5,1]});
-  document.querySelectorAll(".short").forEach(s=>observer.observe(s));
+  },{root:$("feed"),threshold:[0,0.25,0.5,0.75,1]});
+
+  document.querySelectorAll(".short").forEach(section=>observer.observe(section));
 }
 
-function showEmpty(title,text){$("emptyTitle").textContent=title;$("emptyText").textContent=text;$("empty").hidden=false;}
+// Keep the loading indicator in sync with the media pipeline and recover delayed loads.
+$("feed").addEventListener("playing",e=>{
+  const video=e.target;
+  if(video.tagName!=="VIDEO")return;
+  video.closest(".short")?.classList.remove("loading","video-error");
+},true);
+$("feed").addEventListener("waiting",e=>{
+  const video=e.target;
+  if(video.tagName==="VIDEO"&&video===activeVideo)video.closest(".short")?.classList.add("loading");
+},true);
+$("feed").addEventListener("error",e=>{
+  const video=e.target;
+  if(video.tagName!=="VIDEO")return;
+  const section=video.closest(".short");
+  section?.classList.remove("loading");
+  section?.classList.add("video-error");
+},true);
+$("feed").addEventListener("canplay",e=>{
+  const video=e.target;
+  if(video.tagName!=="VIDEO"||video!==activeVideo||!video.paused)return;
+  const section=video.closest(".short");
+  if(section&&!section.classList.contains("paused")&&!document.hidden)startActiveVideo(video,section);
+},true);
+
+// Recover from an unexpected browser/media pause, but respect an intentional pause.
+$("feed").addEventListener("pause",e=>{
+  const video=e.target;
+  if(video.tagName!=="VIDEO"||video!==activeVideo)return;
+  const section=video.closest(".short");
+  if(!section||section.classList.contains("paused")||document.hidden)return;
+  setTimeout(()=>{
+    if(video===activeVideo&&video.paused&&!section.classList.contains("paused")&&!document.hidden){
+      startActiveVideo(video,section);
+    }
+  },180);
+},true);
+
+// ---------- Feed loaders ----------
+function showEmpty(title,text){
+  $("emptyTitle").textContent=title;
+  $("emptyText").textContent=text;
+  $("empty").hidden=false;
+}
 
 async function loadVideos(){
-  $("empty").hidden=true;$("loading").hidden=false;
+  loopAppending=false;
+  loopCycles=0;
+  $("empty").hidden=true;
+  $("loading").hidden=false;
   pageOffset=0;hasMore=true;allVideos=[];
   if(observer)observer.disconnect();
-  if(!db){$("loading").hidden=true;showEmpty("Connection unavailable","Could not initialize video service.");return false;}
+
+  if(!db){
+    $("loading").hidden=true;
+    showEmpty("Connection unavailable","Could not initialize video service.");
+    return false;
+  }
   if(feedMode==="following"){
     if(!currentUser){$("loading").hidden=true;showEmpty("Sign in required","Sign in to see videos from people you follow.");return false;}
     if(!following.size){$("loading").hidden=true;showEmpty("Nothing here yet","Follow creators to see their latest videos.");return false;}
   }
+
   const {data,error}=await fetchVideosPage(0,PAGE_SIZE);
   $("loading").hidden=true;
+
   if(error){$("feed").innerHTML="";showEmpty("Couldn't load videos",error.message);return false;}
+
   let videos=(data||[]).filter(v=>!blocked.has(v.user_id));
   pageOffset=PAGE_SIZE;
   hasMore=(data||[]).length===PAGE_SIZE;
   allVideos=videos;
-  await loadExtrasFor(videos);
+  await loadExtras();
   if(feedMode==="foryou")rankFeed();
   renderFeed();
+  // If the first fetch already reached the end, create the first repeated pass
+  // immediately so even a tiny feed can scroll and continue looping.
+  if(!hasMore&&videos.length)appendLoopBatch();
+
   if(!videos.length){
     if(feedMode==="following")showEmpty("Nothing here yet","Follow creators to see their latest videos.");
     else showEmpty("No videos yet","Videos you and others upload will appear here.");
@@ -776,17 +1066,27 @@ async function loadMoreVideos(){
     pageOffset+=PAGE_SIZE;
     if(data.length<PAGE_SIZE)hasMore=false;
     const fresh=data.filter(v=>!blocked.has(v.user_id));
-    if(!fresh.length)return;
-    await loadExtrasFor(fresh);
-    allVideos.push(...fresh);
-    appendSections(fresh);
-  }finally{loadingMore=false;}
+    if(fresh.length){
+      await loadExtrasFor(fresh);
+      allVideos.push(...fresh);
+      appendSections(fresh);
+    }
+  }finally{
+    loadingMore=false;
+    if(!hasMore)appendLoopBatch();
+  }
 }
 
 $("feed").addEventListener("scroll",()=>{
-  if(loadingMore||!hasMore||!allVideos.length)return;
+  if(!allVideos.length)return;
   const f=$("feed");
-  if(f.scrollTop+f.clientHeight>=f.scrollHeight-700)loadMoreVideos();
+  if(f.scrollTop+f.clientHeight>=f.scrollHeight-700){
+    if(hasMore){
+      if(!loadingMore)loadMoreVideos();
+    }else{
+      appendLoopBatch();
+    }
+  }
 },{passive:true});
 
 function setFeedMode(mode){
@@ -799,6 +1099,7 @@ function setFeedMode(mode){
   loadVideos();
 }
 
+// ---------- Video metadata & gestures ----------
 $("feed").addEventListener("loadedmetadata",e=>{
   const v=e.target;
   if(v.tagName!=="VIDEO"||!v.videoWidth||!v.videoHeight)return;
@@ -823,69 +1124,53 @@ function seekTo(e){
   activeVideo.currentTime=f*activeVideo.duration;
   $("seekFill").style.width=(f*100)+"%";
 }
-seekEl.addEventListener("pointerdown",e=>{seeking=true;seekEl.setPointerCapture(e.pointerId);seekTo(e);});
-seekEl.addEventListener("pointermove",e=>{if(seeking)seekTo(e);});
-seekEl.addEventListener("pointerup",()=>{seeking=false;});
-seekEl.addEventListener("pointercancel",()=>{seeking=false;});
+seekEl.addEventListener("pointerdown",e=>{seeking=true;seekEl.setPointerCapture(e.pointerId);seekTo(e)});
+seekEl.addEventListener("pointermove",e=>{if(seeking)seekTo(e)});
+seekEl.addEventListener("pointerup",()=>{seeking=false});
+seekEl.addEventListener("pointercancel",()=>{seeking=false});
 
-// ---------- Speed badge (fixed: no create/destroy, no blinking) ----------
-function showSpeedBadge(player){
-  const b=player.querySelector(".speed-badge");
-  if(b)b.hidden=false;
-}
-function hideAllSpeedBadges(){
-  document.querySelectorAll(".speed-badge").forEach(b=>{b.hidden=true;});
-}
-function cleanupSpeedup(){
-  clearTimeout(pressTimer);
-  pressTimer=null;
-  if(speedupVideo){
-    try{if(speedupVideo.playbackRate!==1)speedupVideo.playbackRate=1;}catch{}
-    speedupVideo=null;
-  }
-  if(pressSpeedup){
-    pressSpeedup=false;
-    hideAllSpeedBadges();
-    suppressNextClick=true;
-  }
-  speedupPointerId=null;
-}
-
+// Long-press 2x speed
 document.addEventListener("pointerdown",e=>{
   if(e.button>0)return;
-  if(pressSpeedup)return;
   const player=e.target.closest(".player");
   if(!player)return;
   const section=player.closest(".short");
   if(!section||section.dataset.id!==activeId)return;
-  const target=activeVideo;
-  if(!target)return;
-  const pid=e.pointerId;
   clearTimeout(pressTimer);
   pressTimer=setTimeout(()=>{
-    if(target!==activeVideo)return;
-    if(pressSpeedup)return;
-    target.playbackRate=2;
-    speedupVideo=target;
-    speedupPointerId=pid;
-    pressSpeedup=true;
-    showSpeedBadge(player);
-    suppressNextClick=true;
+    if(activeVideo){
+      activeVideo.playbackRate=2;
+      pressSpeedup=true;
+      showSpeedBadge(player);
+      suppressNextClick=true;
+    }
   },400);
 });
-
-document.addEventListener("pointerup",e=>{
-  if(pressSpeedup&&e.pointerId===speedupPointerId){cleanupSpeedup();}
-  else{clearTimeout(pressTimer);pressTimer=null;}
+document.addEventListener("pointerup",()=>{
+  clearTimeout(pressTimer);
+  if(pressSpeedup){
+    if(activeVideo)activeVideo.playbackRate=1;
+    pressSpeedup=false;
+    hideSpeedBadge();
+    suppressNextClick=true;
+  }
 });
-document.addEventListener("pointercancel",cleanupSpeedup);
-document.addEventListener("pointerleave",cleanupSpeedup);
-window.addEventListener("blur",cleanupSpeedup);
-document.addEventListener("visibilitychange",()=>{if(document.hidden)cleanupSpeedup();});
+document.addEventListener("pointercancel",()=>{
+  clearTimeout(pressTimer);
+  if(pressSpeedup){
+    if(activeVideo)activeVideo.playbackRate=1;
+    pressSpeedup=false;
+    hideSpeedBadge();
+  }
+});
 
-// ---------- Seek hint (fixed: no stacking) ----------
+function showSpeedBadge(player){
+  let b=player.querySelector(".speed-badge");
+  if(!b){b=document.createElement("div");b.className="speed-badge";player.appendChild(b);}
+  b.textContent="2×";
+}
+function hideSpeedBadge(){document.querySelectorAll(".speed-badge").forEach(b=>b.remove());}
 function showSeekHint(player,text,side){
-  player.querySelectorAll(".seek-hint").forEach(el=>el.remove());
   const h=document.createElement("div");
   h.className="seek-hint "+side;
   h.textContent=text;
@@ -893,6 +1178,7 @@ function showSeekHint(player,text,side){
   setTimeout(()=>h.remove(),700);
 }
 
+// Tap / double-tap zones
 $("feed").addEventListener("click",async e=>{
   const section=e.target.closest(".short");
   if(!section)return;
@@ -952,7 +1238,11 @@ $("feed").addEventListener("click",async e=>{
       const url=location.origin+location.pathname+"?short="+encodeURIComponent(id);
       if(navigator.share){navigator.share({title:v?.title||"myfyp",url}).catch(()=>{});}
       else if(navigator.clipboard){navigator.clipboard.writeText(url).then(()=>toast("Link copied"));}
-      else{const tmp=document.createElement("textarea");tmp.value=url;document.body.appendChild(tmp);tmp.select();try{document.execCommand("copy");toast("Link copied");}catch{}tmp.remove();}
+      else{
+        const tmp=document.createElement("textarea");tmp.value=url;document.body.appendChild(tmp);tmp.select();
+        try{document.execCommand("copy");toast("Link copied")}catch{}
+        tmp.remove();
+      }
       break;
     }
     case "more":showDetails(id);break;
@@ -962,7 +1252,10 @@ $("feed").addEventListener("click",async e=>{
 });
 
 function toggleSound(){soundOn=!soundOn;applySound();}
-function applySound(){$("soundBtn").querySelector("use").setAttribute("href",soundOn?"#i-sound":"#i-mute");if(activeVideo)activeVideo.muted=!soundOn;}
+function applySound(){
+  $("soundBtn").querySelector("use").setAttribute("href",soundOn?"#i-sound":"#i-mute");
+  if(activeVideo)activeVideo.muted=!soundOn;
+}
 
 function showDetails(id=activeId){
   if(!id){toast("Scroll to a video first");return;}
@@ -973,23 +1266,31 @@ function showDetails(id=activeId){
   $("detailsDesc").textContent=v.description||"No description.";
   const actions=$("detailsActions");
   const isOwner=currentUser&&v.user_id===currentUser.id;
-  if(isOwner)actions.innerHTML=`<button class="btn btn-danger btn-block" onclick="deleteVideo('${escapeHTML(v.id)}')">${icon("trash")}Delete video</button>`;
-  else if(currentUser)actions.innerHTML=`<button class="btn btn-ghost btn-block" onclick="reportVideo('${escapeHTML(v.id)}')">${icon("flag")}Report</button><button class="btn btn-danger btn-block" onclick="blockUser('${escapeHTML(v.user_id)}');closeModal('detailsModal');">${icon("block")}Block ${escapeHTML(nameOf(v.user_id))}</button>`;
-  else actions.innerHTML="";
+  if(isOwner){
+    actions.innerHTML=`<button class="btn btn-danger btn-block" onclick="deleteVideo('${escapeHTML(v.id)}')">${icon("trash")}Delete video</button>`;
+  }else if(currentUser){
+    actions.innerHTML=`
+      <button class="btn btn-ghost btn-block" onclick="reportVideo('${escapeHTML(v.id)}')">${icon("flag")}Report</button>
+      <button class="btn btn-danger btn-block" onclick="blockUser('${escapeHTML(v.user_id)}');closeModal('detailsModal');">${icon("block")}Block ${escapeHTML(nameOf(v.user_id))}</button>`;
+  }else actions.innerHTML="";
   openModal("detailsModal");
 }
 
+// ---------- Likes ----------
 function updateLikeUI(){
   document.querySelectorAll(".short").forEach(s=>{
-    const id=s.dataset.id,b=s.querySelector("[data-action=like]");if(!b)return;
+    const id=s.dataset.id,b=s.querySelector("[data-action=like]");
+    if(!b)return;
     b.classList.toggle("liked",liked.has(id));
     b.setAttribute("aria-pressed",String(liked.has(id)));
-    const c=b.querySelector(".count");if(c)c.textContent=fmt(stats[id]?.likes||0);
+    const c=b.querySelector(".count"); if(c)c.textContent=fmt(stats[id]?.likes||0);
   });
 }
 function spawnRingBurst(id){
-  const wrap=document.querySelector(`.short[data-id="${CSS.escape(id)}"] [data-action=like] .action-icon`);if(!wrap)return;
-  const ring=document.createElement("span");ring.className="ring-burst";wrap.appendChild(ring);setTimeout(()=>ring.remove(),480);
+  const wrap=document.querySelector(`.short[data-id="${CSS.escape(id)}"] [data-action=like] .action-icon`);
+  if(!wrap)return;
+  const ring=document.createElement("span");ring.className="ring-burst";
+  wrap.appendChild(ring);setTimeout(()=>ring.remove(),480);
 }
 function setLike(id,on){
   const st=stats[id]||(stats[id]={likes:0,comments:0});
@@ -1002,11 +1303,21 @@ async function toggleLike(id){
   if(!db)return;
   const on=!liked.has(id);
   setLike(id,on);
-  const {error}=await (on?db.from("likes").insert({user_id:currentUser.id,video_id:id}):db.from("likes").delete().eq("user_id",currentUser.id).eq("video_id",id));
+  const {error}=await (on
+    ?db.from("likes").insert({user_id:currentUser.id,video_id:id})
+    :db.from("likes").delete().eq("user_id",currentUser.id).eq("video_id",id));
   if(error){setLike(id,!on);toast("Couldn't update like");}
 }
 
-async function loadMySaved(){saved.clear();if(!currentUser||!db)return;try{const {data}=await db.from("saved").select("video_id").eq("user_id",currentUser.id);(data||[]).forEach(r=>saved.add(String(r.video_id)));}catch{}}
+// ---------- Saved ----------
+async function loadMySaved(){
+  saved.clear();
+  if(!currentUser||!db)return;
+  try{
+    const {data}=await db.from("saved").select("video_id").eq("user_id",currentUser.id);
+    (data||[]).forEach(r=>saved.add(String(r.video_id)));
+  }catch{}
+}
 function updateSaveUI(id,on){
   const btn=document.querySelector(`.short[data-id="${CSS.escape(id)}"] [data-action=save]`);
   if(btn){btn.classList.toggle("saved",on);btn.setAttribute("aria-pressed",String(on));}
@@ -1018,7 +1329,9 @@ async function toggleSave(id){
   if(on)saved.add(id);else saved.delete(id);
   updateSaveUI(id,on);
   try{
-    const {error}=await (on?db.from("saved").insert({user_id:currentUser.id,video_id:id}):db.from("saved").delete().eq("user_id",currentUser.id).eq("video_id",id));
+    const {error}=await (on
+      ?db.from("saved").insert({user_id:currentUser.id,video_id:id})
+      :db.from("saved").delete().eq("user_id",currentUser.id).eq("video_id",id));
     if(error)throw error;
     toast(on?"Saved":"Removed");
   }catch{
@@ -1028,7 +1341,15 @@ async function toggleSave(id){
   }
 }
 
-async function loadMyFollowing(){following.clear();if(!currentUser||!db)return;try{const {data}=await db.from("follows").select("following_id").eq("follower_id",currentUser.id);(data||[]).forEach(r=>following.add(r.following_id));}catch{}}
+// ---------- Following ----------
+async function loadMyFollowing(){
+  following.clear();
+  if(!currentUser||!db)return;
+  try{
+    const {data}=await db.from("follows").select("following_id").eq("follower_id",currentUser.id);
+    (data||[]).forEach(r=>following.add(r.following_id));
+  }catch{}
+}
 function updateFollowUI(uid,on){
   document.querySelectorAll(`[data-action=follow][data-uid="${CSS.escape(uid)}"]`).forEach(btn=>{
     btn.classList.toggle("following",on);
@@ -1043,7 +1364,9 @@ async function toggleFollow(uid){
   if(on)following.add(uid);else following.delete(uid);
   updateFollowUI(uid,on);
   try{
-    const {error}=await (on?db.from("follows").insert({follower_id:currentUser.id,following_id:uid}):db.from("follows").delete().eq("follower_id",currentUser.id).eq("following_id",uid));
+    const {error}=await (on
+      ?db.from("follows").insert({follower_id:currentUser.id,following_id:uid})
+      :db.from("follows").delete().eq("follower_id",currentUser.id).eq("following_id",uid));
     if(error)throw error;
   }catch{
     if(on)following.delete(uid);else following.add(uid);
@@ -1052,7 +1375,15 @@ async function toggleFollow(uid){
   }
 }
 
-async function loadMyBlocks(){blocked.clear();if(!currentUser||!db)return;try{const {data}=await db.from("blocks").select("blocked_id").eq("blocker_id",currentUser.id);(data||[]).forEach(r=>blocked.add(r.blocked_id));}catch{}}
+// ---------- Blocks ----------
+async function loadMyBlocks(){
+  blocked.clear();
+  if(!currentUser||!db)return;
+  try{
+    const {data}=await db.from("blocks").select("blocked_id").eq("blocker_id",currentUser.id);
+    (data||[]).forEach(r=>blocked.add(r.blocked_id));
+  }catch{}
+}
 async function blockUser(uid){
   if(!currentUser||!db)return;
   if(!confirm("Block this user? Their videos will be hidden from your feed."))return;
@@ -1066,6 +1397,7 @@ async function blockUser(uid){
   }catch{toast("Couldn't block user");}
 }
 
+// ---------- Reports ----------
 function reportVideo(id){
   if(!currentUser){openAuth();return;}
   reportTargetId=id;
@@ -1083,10 +1415,11 @@ $("reportForm").addEventListener("submit",async e=>{
     if(error)throw error;
     closeModal("reportModal");
     toast("Report submitted. Thanks.");
-  }catch{toast("Couldn't submit report");}
+  }catch(err){toast("Couldn't submit report");}
   reportTargetId=null;
 });
 
+// ---------- Delete video ----------
 async function deleteVideo(id){
   if(!currentUser||!db)return;
   const v=allVideos.find(x=>String(x.id)===String(id));
@@ -1096,7 +1429,7 @@ async function deleteVideo(id){
     let error;
     const res=await db.from("videos").update({deleted_at:new Date().toISOString()}).eq("id",id);
     error=res.error;
-    if(error&&/deleted_at/i.test(error.message||"")){
+    if(error&&/deleted_at/i.test(error.message||'')){
       const hard=await db.from("videos").delete().eq("id",id);
       error=hard.error;
     }
@@ -1110,12 +1443,16 @@ async function deleteVideo(id){
   }catch(e){toast("Couldn't delete: "+e.message);}
 }
 
+// ---------- Comments ----------
 function commentHTML(c){
   const mine=currentUser&&c.user_id===currentUser.id;
-  return `<div class="comment">${avatarHTML(profiles[c.user_id],"md")}<div class="comment-body"><div class="comment-head"><b>${escapeHTML(nameOf(c.user_id))}</b>${formatDate(c.created_at)}${mine?` · <button class="comment-del" data-del="${escapeHTML(c.id)}">Delete</button>`:""}</div><div class="comment-text">${escapeHTML(c.body)}</div></div></div>`;
+  return `<div class="comment">${avatarHTML(profiles[c.user_id],"md")}
+    <div class="comment-body"><div class="comment-head"><b>${escapeHTML(nameOf(c.user_id))}</b>${formatDate(c.created_at)}${mine?` · <button class="comment-del" data-del="${escapeHTML(c.id)}">Delete</button>`:""}</div>
+    <div class="comment-text">${escapeHTML(c.body)}</div></div></div>`;
 }
 function appendComment(c){
-  const list=$("commentList");if(!list)return;
+  const list=$("commentList");
+  if(!list)return;
   if(list.querySelector(".search-empty"))list.innerHTML="";
   if(list.querySelector(`[data-cid="${CSS.escape(String(c.id))}"]`))return;
   const wrap=document.createElement("div");
@@ -1156,6 +1493,8 @@ async function openComments(id){
   });
   if(!data||!data.length)list.innerHTML=`<div class="search-empty">No comments yet. Be the first.</div>`;
   list.scrollTop=list.scrollHeight;
+
+  // Realtime
   if(db){
     if(commentChannel)db.removeChannel(commentChannel);
     commentChannel=db.channel(`comments:${id}`)
@@ -1164,7 +1503,10 @@ async function openComments(id){
         if(currentUser&&c.user_id===currentUser.id)return;
         (async()=>{
           if(!profiles[c.user_id]){
-            try{const {data:p}=await db.from("profiles").select("*").eq("id",c.user_id).maybeSingle();if(p)profiles[p.id]=p;}catch{}
+            try{
+              const {data:p}=await db.from("profiles").select("*").eq("id",c.user_id).maybeSingle();
+              if(p)profiles[p.id]=p;
+            }catch{}
           }
           appendComment(c);
           bumpComments(id,1);
@@ -1195,12 +1537,19 @@ $("commentList").addEventListener("click",async e=>{
   bumpComments(commentVideo,-1);
 });
 
+// ---------- Avatar / profile helpers ----------
 function avatarHTML(p,cls="md"){
   const name=p?.username||"?";
-  return p?.avatar_url?`<img class="av ${cls}" src="${escapeHTML(p.avatar_url)}" alt="">`:`<span class="av ${cls}">${escapeHTML(name[0])}</span>`;
+  return p?.avatar_url
+    ?`<img class="av ${cls}" src="${escapeHTML(p.avatar_url)}" alt="">`
+    :`<span class="av ${cls}">${escapeHTML(name[0])}</span>`;
 }
 const nameOf=uid=>"@"+(profiles[uid]?.username||"user");
-function refreshUploaders(){document.querySelectorAll(".uploader").forEach(u=>{const uid=u.dataset.uid;if(!uid)return;});}
+function refreshUploaders(){
+  document.querySelectorAll(".uploader").forEach(u=>{
+    const uid=u.dataset.uid;if(!uid)return;
+  });
+}
 function renderAvatarBtn(){
   if(!currentUser)return;
   const me=profiles[currentUser.id]||{username:currentUser.email};
@@ -1219,10 +1568,14 @@ async function loadMyLikes(){
   (data||[]).forEach(r=>liked.add(String(r.video_id)));
 }
 
+// ---------- User profile view ----------
 async function openUserProfile(uid){
   if(!db||!uid)return;
   if(!profiles[uid]){
-    try{const {data}=await db.from("profiles").select("*").eq("id",uid).maybeSingle();if(data)profiles[uid]=data;}catch{}
+    try{
+      const {data}=await db.from("profiles").select("*").eq("id",uid).maybeSingle();
+      if(data)profiles[uid]=data;
+    }catch{}
   }
   const p=profiles[uid]||{username:"user"};
   $("userProfileAvatar").innerHTML=avatarHTML(p,"lg");
@@ -1232,27 +1585,40 @@ async function openUserProfile(uid){
   const grid=$("userProfileGrid");
   grid.innerHTML=`<div class="search-empty" style="grid-column:1/-1;">Loading…</div>`;
   openModal("userProfileModal");
+
+  // Follower count (if follows table exists)
   try{
     const {count}=await db.from("follows").select("*",{count:"exact",head:true}).eq("following_id",uid);
     if(count!==null){
       $("userProfileMeta").textContent=`${count} follower${count===1?"":"s"}`;
       if(currentUser&&currentUser.id!==uid){
         const isFollowing=following.has(uid);
-        $("userProfileActions").innerHTML=`<button class="btn ${isFollowing?"btn-ghost":"btn-primary"}" onclick="toggleFollow('${escapeHTML(uid)}')">${isFollowing?"Following":"Follow"}</button><button class="btn btn-danger" onclick="blockUser('${escapeHTML(uid)}');closeModal('userProfileModal');">${icon("block")}Block</button>`;
+        $("userProfileActions").innerHTML=`
+          <button class="btn ${isFollowing?"btn-ghost":"btn-primary"}" data-action="follow" data-uid="${escapeHTML(uid)}" onclick="toggleFollow('${escapeHTML(uid)}')">${isFollowing?"Following":"Follow"}</button>
+          <button class="btn btn-danger" onclick="blockUser('${escapeHTML(uid)}');closeModal('userProfileModal');">${icon("block")}Block</button>`;
       }
     }
   }catch{}
+
   try{
     const {data}=await db.from("videos").select("*").eq("user_id",uid).order("created_at",{ascending:false});
     const videos=data||[];
-    if(!videos.length){grid.innerHTML=`<div class="search-empty" style="grid-column:1/-1;">No videos yet.</div>`;return;}
+    if(!videos.length){
+      grid.innerHTML=`<div class="search-empty" style="grid-column:1/-1;">No videos yet.</div>`;
+      return;
+    }
     grid.innerHTML=videos.map(v=>{
       const poster=posterURL(v);
-      return `<button class="video-tile" onclick="jumpToVideo('${escapeHTML(v.id)}')">${poster?`<img src="${escapeHTML(poster)}" alt="">`:`<div class="placeholder">${icon("play")}</div>`}</button>`;
+      return `<button class="video-tile" onclick="jumpToVideo('${escapeHTML(v.id)}')">
+        ${poster?`<img src="${escapeHTML(poster)}" alt="">`:`<div class="placeholder">${icon("play")}</div>`}
+      </button>`;
     }).join("");
-  }catch{grid.innerHTML=`<div class="search-empty" style="grid-column:1/-1;">Couldn't load videos.</div>`;}
+  }catch{
+    grid.innerHTML=`<div class="search-empty" style="grid-column:1/-1;">Couldn't load videos.</div>`;
+  }
 }
 
+// ---------- Saved list ----------
 async function openSaved(){
   closeMenu();
   if(!currentUser){openAuth();return;}
@@ -1262,16 +1628,23 @@ async function openSaved(){
   openModal("savedModal");
   try{
     const {data}=await db.from("saved").select("video_id, created_at").eq("user_id",currentUser.id).order("created_at",{ascending:false});
-    if(!data||!data.length){grid.innerHTML=`<div class="search-empty" style="grid-column:1/-1;">You haven't saved any videos yet.</div>`;return;}
+    if(!data||!data.length){
+      grid.innerHTML=`<div class="search-empty" style="grid-column:1/-1;">You haven't saved any videos yet.</div>`;
+      return;
+    }
     const ids=data.map(r=>r.video_id);
     const {data:videos}=await db.from("videos").select("*").in("id",ids);
     const byId=Object.fromEntries((videos||[]).map(v=>[v.id,v]));
     const ordered=ids.map(id=>byId[id]).filter(Boolean);
     grid.innerHTML=ordered.map(v=>{
       const poster=posterURL(v);
-      return `<button class="video-tile" onclick="jumpToVideo('${escapeHTML(v.id)}')">${poster?`<img src="${escapeHTML(poster)}" alt="">`:`<div class="placeholder">${icon("play")}</div>`}</button>`;
+      return `<button class="video-tile" onclick="jumpToVideo('${escapeHTML(v.id)}')">
+        ${poster?`<img src="${escapeHTML(poster)}" alt="">`:`<div class="placeholder">${icon("play")}</div>`}
+      </button>`;
     }).join("");
-  }catch{grid.innerHTML=`<div class="search-empty" style="grid-column:1/-1;">Couldn't load saved videos.</div>`;}
+  }catch{
+    grid.innerHTML=`<div class="search-empty" style="grid-column:1/-1;">Couldn't load saved videos.</div>`;
+  }
 }
 
 async function jumpToVideo(id){
@@ -1283,6 +1656,7 @@ async function jumpToVideo(id){
     if(target)target.scrollIntoView({behavior:"smooth"});
     return;
   }
+  // Not in current feed — fetch and prepend
   try{
     const {data}=await db.from("videos").select("*").eq("id",id).maybeSingle();
     if(!data){toast("Video unavailable");return;}
@@ -1304,6 +1678,7 @@ async function jumpToVideo(id){
   }catch{toast("Couldn't load video");}
 }
 
+// ---------- Edit profile ----------
 function openProfile(){
   if(!currentUser){openAuth();return;}
   closeMenu();
@@ -1365,6 +1740,7 @@ $("profileForm").addEventListener("submit",async e=>{
   finally{btn.disabled=false;}
 });
 
+// ---------- Upload ----------
 const XHR_MAX=45*1024*1024;
 const ALLOWED=["video/mp4","video/webm","video/quicktime"];
 const EXT={"video/mp4":"mp4","video/webm":"webm","video/quicktime":"mov"};
@@ -1387,15 +1763,15 @@ function xhrUpload(file,path,token,onProgress,job){
     xhr.setRequestHeader("content-type",file.type);
     xhr.setRequestHeader("cache-control","max-age=3600");
     xhr.setRequestHeader("x-upsert","false");
-    xhr.upload.onprogress=e=>{if(e.lengthComputable)onProgress(e.loaded/e.total*100);};
+    xhr.upload.onprogress=e=>{if(e.lengthComputable)onProgress(e.loaded/e.total*100)};
     xhr.onload=()=>{
       if(xhr.status>=200&&xhr.status<300)return resolve();
       let msg="Upload failed ("+xhr.status+")";
-      try{msg=JSON.parse(xhr.responseText).message||msg;}catch{}
+      try{msg=JSON.parse(xhr.responseText).message||msg}catch{}
       const err=new Error(msg);err.status=xhr.status;reject(err);
     };
-    xhr.onerror=()=>{const err=new Error("Network error");err.status=0;reject(err);};
-    xhr.onabort=()=>{const err=new Error("Cancelled");err.cancelled=true;reject(err);};
+    xhr.onerror=()=>{const err=new Error("Network error");err.status=0;reject(err)};
+    xhr.onabort=()=>{const err=new Error("Cancelled");err.cancelled=true;reject(err)};
     xhr.send(file);
   });
 }
@@ -1418,7 +1794,7 @@ function tusUpload(file,path,token,onProgress,job){
     job.cancel=()=>{upload.abort(true).catch(()=>{});const err=new Error("Cancelled");err.cancelled=true;reject(err);};
     upload.findPreviousUploads().then(prev=>{
       const p=prev.find(x=>x.metadata?.objectName?.startsWith(currentUser.id+"/"));
-      if(p){job.path=p.metadata.objectName;upload.resumeFromPreviousUpload(p);}
+      if(p){job.path=p.metadata.objectName;upload.resumeFromPreviousUpload(p)}
       upload.start();
     }).catch(reject);
   });
@@ -1427,7 +1803,8 @@ function tusUpload(file,path,token,onProgress,job){
 const OPT_MIN=8*1024*1024, OPT_MAX_SECONDS=120, OPT_LONG_SIDE=1280;
 const OPTIMIZE=true;
 function shouldOptimize(file){
-  return OPTIMIZE&&file.size>OPT_MIN&&typeof MediaRecorder!=="undefined"&&!!HTMLCanvasElement.prototype.captureStream&&!!(window.AudioContext||window.webkitAudioContext);
+  return OPTIMIZE&&file.size>OPT_MIN&&typeof MediaRecorder!=="undefined"
+    &&!!HTMLCanvasElement.prototype.captureStream&&!!(window.AudioContext||window.webkitAudioContext);
 }
 function compressVideo(file,job,onProgress){
   return new Promise((resolve,reject)=>{
@@ -1436,8 +1813,8 @@ function compressVideo(file,job,onProgress){
     video.playsInline=true;video.preload="auto";video.src=url;
     let ac,rec,done=false,timer;
     const cleanup=()=>{clearTimeout(timer);video.pause();video.removeAttribute("src");video.load();URL.revokeObjectURL(url);if(ac)ac.close().catch(()=>{});};
-    const fail=err=>{if(done)return;done=true;try{if(rec&&rec.state!=="inactive")rec.stop();}catch{}cleanup();reject(err);};
-    job.cancel=()=>{const e=new Error("Cancelled");e.cancelled=true;fail(e);};
+    const fail=err=>{if(done)return;done=true;try{if(rec&&rec.state!=="inactive")rec.stop()}catch{}cleanup();reject(err);};
+    job.cancel=()=>{const e=new Error("Cancelled");e.cancelled=true;fail(e)};
     video.onerror=()=>fail(new Error("Cannot read video"));
     video.onloadedmetadata=()=>{
       const dur=video.duration;
@@ -1455,7 +1832,7 @@ function compressVideo(file,job,onProgress){
       dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
       rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:2500000,audioBitsPerSecond:128000});
       const chunks=[];
-      rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
+      rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
       rec.onstop=()=>{
         if(done)return;done=true;
         const type=mime.split(";")[0];
@@ -1463,7 +1840,7 @@ function compressVideo(file,job,onProgress){
         cleanup();
         resolve(out.size<file.size*0.9?out:file);
       };
-      video.onended=()=>{if(rec.state!=="inactive")rec.stop();};
+      video.onended=()=>{if(rec.state!=="inactive")rec.stop()};
       const draw=()=>{
         if(done)return;
         ctx.drawImage(video,0,0,w,h);
@@ -1471,7 +1848,7 @@ function compressVideo(file,job,onProgress){
         if(video.requestVideoFrameCallback)video.requestVideoFrameCallback(draw);else requestAnimationFrame(draw);
       };
       timer=setTimeout(()=>fail(new Error("timeout")),(dur*2+20)*1000);
-      ac.resume().then(()=>video.play()).then(()=>{rec.start(1000);draw();}).catch(fail);
+      ac.resume().then(()=>video.play()).then(()=>{rec.start(1000);draw()}).catch(fail);
     };
   });
 }
@@ -1504,8 +1881,8 @@ function startUpload(file){
       let body=file;
       if(shouldOptimize(file)){
         job.stage="optimizing";
-        try{body=await compressVideo(file,job,onProgress);}
-        catch(err){if(err.cancelled)throw err;body=file;}
+        try{body=await compressVideo(file,job,onProgress)}
+        catch(err){if(err.cancelled)throw err;body=file}
         job.stage="uploading";job.percent=0;
         if(pending===job)showProgress(job);
       }
@@ -1526,19 +1903,24 @@ function startUpload(file){
     }catch(err){job.state=err.cancelled?"cancelled":"failed";throw err;}
   })();
   job.promise.catch(()=>{});
+
+  // Poster generation runs in parallel
   generatePoster(file).then(async blob=>{
     if(!blob||pending!==job||job.state==="cancelled")return;
     const posterPath=`${currentUser.id}/poster-${crypto.randomUUID()}.jpg`;
     const {error}=await db.storage.from(BUCKET).upload(posterPath,blob,{contentType:"image/jpeg",cacheControl:"31536000"});
     if(!error)job.poster_path=posterPath;
   }).catch(()=>{});
+
   return job;
 }
 
 function showProgress(job){
   $("progress").hidden=false;
   $("progressBar").style.width=job.percent+"%";
-  setMessage("uploadStatus",job.state==="done"?"Video uploaded. Add a title and publish.":`${job.stage==="optimizing"?"Optimizing video":"Uploading"}… ${job.percent}%`);
+  setMessage("uploadStatus",job.state==="done"
+    ?"Video uploaded. Add a title and publish."
+    :`${job.stage==="optimizing"?"Optimizing video":"Uploading"}… ${job.percent}%`);
 }
 
 function discardPending(){
@@ -1556,7 +1938,9 @@ $("title").addEventListener("input",()=>{$("titleCount").textContent=`${$("title
 
 function updateDropLabel(){
   const f=$("videoFile").files[0];
-  $("dropLabel").innerHTML=f?`<span class="file-name">${escapeHTML(f.name)}</span> · ${(f.size/1024/1024).toFixed(1)} MB`:`<strong>Choose a file</strong> or drag it here`;
+  $("dropLabel").innerHTML=f
+    ?`<span class="file-name">${escapeHTML(f.name)}</span> · ${(f.size/1024/1024).toFixed(1)} MB`
+    :`<strong>Choose a file</strong> or drag it here`;
 }
 
 $("videoFile").addEventListener("change",()=>{
@@ -1599,7 +1983,7 @@ $("uploadForm").addEventListener("submit",async e=>{
     const payload={user_id:currentUser.id,title,description,storage_path:job.path};
     if(job.poster_path)payload.poster_path=job.poster_path;
     let {error}=await db.from("videos").insert(payload);
-    if(error&&/poster_path/i.test(error.message||"")){
+    if(error&&/poster_path/i.test(error.message||'')){
       delete payload.poster_path;
       const retry=await db.from("videos").insert(payload);
       error=retry.error;
@@ -1619,18 +2003,35 @@ $("uploadForm").addEventListener("submit",async e=>{
   finally{button.disabled=false;button.textContent=label;}
 });
 
-window.addEventListener("beforeunload",e=>{if(pending&&pending.state==="uploading"){e.preventDefault();e.returnValue="";}});
+window.addEventListener("beforeunload",e=>{
+  if(pending&&pending.state==="uploading"){e.preventDefault();e.returnValue="";}
+});
 
+// ---------- Search ----------
 function openSearch(){openModal("searchModal");searchVideos();setTimeout(()=>$("searchInput").focus(),50);}
 function closeSearch(){closeModal("searchModal");$("searchInput").value="";}
 function searchVideos(){
   const q=$("searchInput").value.toLowerCase().trim();
-  const results=allVideos.filter(v=>(v.title||"").toLowerCase().includes(q)||(v.description||"").toLowerCase().includes(q));
-  if(!allVideos.length){$("searchResults").innerHTML=`<div class="search-empty">No videos loaded yet.</div>`;return;}
+  const results=allVideos.filter(v=>
+    (v.title||"").toLowerCase().includes(q)||
+    (v.description||"").toLowerCase().includes(q)
+  );
+  if(!allVideos.length){
+    $("searchResults").innerHTML=`<div class="search-empty">No videos loaded yet.</div>`;
+    return;
+  }
   $("searchResults").innerHTML=results.length?results.map(v=>{
     const poster=posterURL(v);
-    return `<button class="result" data-search-id="${escapeHTML(v.id)}"><span class="result-thumb">${poster?`<img src="${escapeHTML(poster)}" alt="">`:`<svg viewBox="0 0 24 24"><use href="#i-play"/></svg>`}</span><span class="result-body"><div class="result-title">${escapeHTML(v.title||"Untitled")}</div><div class="result-sub">${escapeHTML(nameOf(v.user_id))} · ${formatDate(v.created_at)}</div></span></button>`;
+    return `
+    <button class="result" data-search-id="${escapeHTML(v.id)}">
+      <span class="result-thumb">${poster?`<img src="${escapeHTML(poster)}" alt="">`:`<svg viewBox="0 0 24 24"><use href="#i-play"/></svg>`}</span>
+      <span class="result-body">
+        <div class="result-title">${escapeHTML(v.title||"Untitled")}</div>
+        <div class="result-sub">${escapeHTML(nameOf(v.user_id))} · ${formatDate(v.created_at)}</div>
+      </span>
+    </button>`;
   }).join(""):`<div class="search-empty">No results for “${escapeHTML(q)}”</div>`;
+
   $("searchResults").querySelectorAll("[data-search-id]").forEach(btn=>{
     btn.addEventListener("click",()=>{
       const id=btn.dataset.searchId;
@@ -1642,10 +2043,15 @@ function searchVideos(){
 
 async function goHome(){
   const f=$("feed");
-  if(f.scrollTop<10){const ok=await loadVideos();if(ok)toast("Feed refreshed");return;}
+  if(f.scrollTop<10){
+    const ok=await loadVideos();
+    if(ok)toast("Feed refreshed");
+    return;
+  }
   f.scrollTo({top:0,behavior:"smooth"});
 }
 
+// ---------- Keyboard ----------
 document.addEventListener("keydown",e=>{
   const typing=/INPUT|TEXTAREA/.test(document.activeElement?.tagName);
   if(e.key==="Escape"){
@@ -1655,18 +2061,19 @@ document.addEventListener("keydown",e=>{
   }
   if(typing||document.querySelector(".overlay.open"))return;
   switch(e.key){
-    case "/":e.preventDefault();openSearch();break;
-    case " ":e.preventDefault();togglePlayPause();break;
-    case "ArrowDown":case "j":e.preventDefault();$("feed").scrollBy({top:$("feed").clientHeight,behavior:"smooth"});break;
-    case "ArrowUp":case "k":e.preventDefault();$("feed").scrollBy({top:-$("feed").clientHeight,behavior:"smooth"});break;
-    case "ArrowRight":e.preventDefault();seekBy(5);break;
-    case "ArrowLeft":e.preventDefault();seekBy(-5);break;
-    case "l":case "L":if(activeId)toggleLike(activeId);break;
-    case "s":case "S":if(activeId)toggleSave(activeId);break;
-    case "m":case "M":soundOn=!soundOn;applySound();break;
-    case "f":case "F":toggleFullscreen();break;
+    case "/": e.preventDefault(); openSearch(); break;
+    case " ": e.preventDefault(); togglePlayPause(); break;
+    case "ArrowDown": case "j": e.preventDefault(); $("feed").scrollBy({top:$("feed").clientHeight,behavior:"smooth"}); break;
+    case "ArrowUp": case "k": e.preventDefault(); $("feed").scrollBy({top:-$("feed").clientHeight,behavior:"smooth"}); break;
+    case "ArrowRight": e.preventDefault(); seekBy(5); break;
+    case "ArrowLeft": e.preventDefault(); seekBy(-5); break;
+    case "l": case "L": if(activeId)toggleLike(activeId); break;
+    case "s": case "S": if(activeId)toggleSave(activeId); break;
+    case "m": case "M": soundOn=!soundOn; applySound(); break;
+    case "f": case "F": toggleFullscreen(); break;
   }
 });
+
 function togglePlayPause(){
   if(!activeVideo)return;
   const section=activeVideo.closest(".short");
@@ -1683,14 +2090,17 @@ function toggleFullscreen(){
   else{document.exitFullscreen?.();}
 }
 
+// ---------- Visibility ----------
 document.addEventListener("visibilitychange",()=>{
-  if(document.hidden){if(activeVideo)activeVideo.pause();cleanupSpeedup();}
-  else if(activeVideo){
+  if(document.hidden){
+    if(activeVideo)activeVideo.pause();
+  }else if(activeVideo){
     const section=activeVideo.closest(".short");
     if(section&&!section.classList.contains("paused"))activeVideo.play().catch(()=>{});
   }
 });
 
+// ---------- Deep link ----------
 function openSharedShort(){
   const id=new URLSearchParams(location.search).get("short");
   if(!id)return;
@@ -1699,19 +2109,26 @@ function openSharedShort(){
   const target=document.querySelectorAll(".short")[index];
   if(!target)return;
   const v=target.querySelector("video");
-  if(v){v.preload="auto";try{v.load();}catch{}}
+  if(v){v.preload="auto";try{v.load()}catch{}}
   requestAnimationFrame(()=>target.scrollIntoView());
 }
 
+// ---------- PWA manifest (inline blob) ----------
 try{
   const iconSVG=`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='120' fill='#ff2d55'/><path d='M192 152v208l168-104z' fill='#ffffff'/></svg>`;
-  const manifest={name:"myfyp",short_name:"myfyp",description:"Short-form video, simply.",start_url:location.pathname,display:"standalone",background_color:"#000000",theme_color:"#000000",icons:[{src:"data:image/svg+xml,"+encodeURIComponent(iconSVG),sizes:"512x512",type:"image/svg+xml",purpose:"any"}]};
+  const manifest={
+    name:"myfyp",short_name:"myfyp",description:"Short-form video, simply.",
+    start_url:location.pathname,display:"standalone",background_color:"#000000",theme_color:"#000000",
+    icons:[{src:"data:image/svg+xml,"+encodeURIComponent(iconSVG),sizes:"512x512",type:"image/svg+xml",purpose:"any"}]
+  };
   const blob=new Blob([JSON.stringify(manifest)],{type:"application/manifest+json"});
   const link=document.createElement("link");
-  link.rel="manifest";link.href=URL.createObjectURL(blob);
+  link.rel="manifest";
+  link.href=URL.createObjectURL(blob);
   document.head.appendChild(link);
 }catch{}
 
+// ---------- Boot ----------
 updateAccount().then(()=>loadVideos()).then(openSharedShort);
 </script>
 </body>
